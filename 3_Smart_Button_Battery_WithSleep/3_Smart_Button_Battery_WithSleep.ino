@@ -19,9 +19,10 @@ uint8_t led3 = 17;          // RX Pin (We can use it as a GPIO LED output)
 
 #define uS_TO_S_FACTOR                                                         \
   1000000ULL /* Conversion factor for micro seconds to seconds */
-// Only wake up periodically to report battery, e.g., every 1 hour (3600
-// seconds)
-#define TIME_TO_SLEEP 3600
+// Only wake up periodically to report battery
+// TESTING MODE: Set to 60 seconds (1 minute). CHANGE TO 3600 (1 hour) FOR
+// PRODUCTION!
+#define TIME_TO_SLEEP 60
 
 // We use ZigbeeColorDimmerSwitch so we can send toggle and step up/down
 // (dimming) commands
@@ -58,6 +59,9 @@ void triggerLED(uint8_t ledPin) {
 // Global wake-up flag to prevent immediate sleep if buttons are being held
 bool keepAwake = false;
 uint32_t wakeTime = 0;
+
+// MOSFET Control Pin for Battery Measurement (D10 -> GPIO 18)
+#define BATTERY_MOSFET_PIN 18
 
 // Global variables for deep sleep wakeup detection
 uint64_t globalWakeupPinMask = 0;
@@ -102,6 +106,9 @@ void setup() {
   pinMode(button2, INPUT_PULLUP);
   pinMode(button3, INPUT_PULLUP);
 
+  pinMode(BATTERY_MOSFET_PIN,
+          INPUT);     // Initially set as INPUT so the physical 100k Pull-Up
+                      // resistor keeps the P-Channel MOSFET closed
   pinMode(A0, INPUT); // Configure A0 as ADC input
 
   zbSwitch1.setManufacturerAndModel("Espressif", "ZBSwitch1");
@@ -142,7 +149,7 @@ void setup() {
   uint64_t ext1_bitmask =
       (1ULL << button1) | (1ULL << button2) | (1ULL << button3);
   esp_sleep_enable_ext1_wakeup(ext1_bitmask, ESP_EXT1_WAKEUP_ANY_LOW);
-  
+
   // Enable timer wakeup to report battery and keep connection alive
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
@@ -259,17 +266,39 @@ void loop() {
   // loop
   processedWakeup = true;
 
-  // Measure and send battery periodically (if woken by timer, or before going
-  // to sleep occasionally) For simplicity, we send it before we go to sleep
+  // Measure and send battery periodically
+  // ONLY if waking up from the TIMER (which means it's a scheduled check-in)
   static bool batteryReported = false;
-  if (!keepAwake && !batteryReported) {
+  esp_sleep_wakeup_cause_t current_wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  // We check battery if woken by timer, OR if this is a fresh boot (power on)
+  if (!keepAwake && !batteryReported &&
+      (current_wakeup_reason == ESP_SLEEP_WAKEUP_TIMER ||
+       current_wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED)) {
+
+    // 1. Turn ON the MOSFET to power the voltage divider
+    pinMode(BATTERY_MOSFET_PIN, OUTPUT);
+    digitalWrite(BATTERY_MOSFET_PIN, LOW);
+
+    // 2. Wait for voltage to settle across resistors and the 100nF capacitor
+    delay(15);
+
+    // 3. Take Multiple Samples
     uint32_t Vbatt = 0;
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++) {
       Vbatt += analogReadMilliVolts(A0);
-      
+      delay(2); // Small delay between ADC reads
+    }
+
+    // 4. Turn OFF the MOSFET immediately to save power
+    pinMode(
+        BATTERY_MOSFET_PIN,
+        INPUT); // Hand control back to the physical hardware Pull-UP resistor
+
     // ADC Calibration Factor: Adjust this to match your multimeter reading.
-    // e.g., if multimeter says 4.19V and serial says 4.13V: 4.19 / 4.13 = 1.0145
-    float calibration_factor = 1.0145; 
+    // e.g., if multimeter says 4.19V and serial says 4.13V: 4.19 / 4.13
+    // = 1.0145
+    float calibration_factor = 1.0145;
     float Vbattf = (2.0 * Vbatt / 16.0 / 1000.0) * calibration_factor;
 
     float max_v = 4.2;
@@ -284,7 +313,8 @@ void loop() {
     zbSwitch1.setBatteryPercentage((uint8_t)percentageReal);
     zbSwitch1.reportBatteryPercentage(); // Force update to HA
 
-    Serial.printf("Battery: %.2fV (%d%%)\n", Vbattf, (uint8_t)percentageReal);
+    Serial.printf("Battery Check via Timer: %.2fV (%d%%)\n", Vbattf,
+                  (uint8_t)percentageReal);
     batteryReported = true;
   }
 
