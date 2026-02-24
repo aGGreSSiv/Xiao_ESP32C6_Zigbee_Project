@@ -33,6 +33,11 @@ A deeply optimized, battery-powered **Sleepy End Device** remote control.
 
 ## 📥 Getting Started / Installation
 
+### Compilation Environment
+This project has been tested and verified with the following setup:
+- **Arduino IDE Version:** 2.3.7
+- **ESP32 Board Library Version:** 3.3.7
+
 1. Install the [Arduino IDE](https://www.arduino.cc/en/software) and ESP32 board manager core.
 2. Select your board: **Tools > Board > Seeed Studio XIAO ESP32C6**.
 3. Configure the Zigbee environment:
