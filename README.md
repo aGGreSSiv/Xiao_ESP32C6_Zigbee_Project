@@ -1,5 +1,11 @@
 <div align="center">
   <h1>🌟 Xiao ESP32-C6 Zigbee Projects</h1>
+  <p>
+    <img src="https://img.shields.io/badge/Platform-Arduino-00979D?style=flat-square&logo=arduino&logoColor=white" alt="Platform Arduino">
+    <img src="https://img.shields.io/badge/Hardware-XIAO_ESP32__C6-81C784?style=flat-square" alt="Hardware XIAO ESP32-C6">
+    <img src="https://img.shields.io/badge/Protocol-Zigbee-E53935?style=flat-square" alt="Protocol Zigbee">
+    <img src="https://img.shields.io/badge/Integration-Home_Assistant-41BDF5?style=flat-square&logo=home-assistant&logoColor=white" alt="Integration Home Assistant">
+  </p>
   <p>A collection of robust, Home Assistant-ready Zigbee node implementations for the Seeed Studio XIAO ESP32-C6 microcontroller.</p>
 </div>
 
