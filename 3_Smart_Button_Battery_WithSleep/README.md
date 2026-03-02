@@ -24,7 +24,7 @@ This version of the firmware configures the XIAO ESP32-C6 as a **Sleepy End Devi
 | **LED 1** | LED_BUILTIN | Onboard LED. Blinks on Button 1 activity. |
 | **LED 2** | TX / GPIO 16 | External LED for Button 2 activity. Connect to GND via a small resistor. |
 | **LED 3** | RX / GPIO 17 | External LED for Button 3 activity. Connect to GND via a small resistor. |
-| **Battery ADC** | A0 | Connected to battery voltage divider. |
+| **Battery ADC** | A0 | Connected to battery voltage divider. Use two **1 Megaohm** resistors (1M + 1M) for ultra-low power consumption and add a **100nF (0.1µF) ceramic capacitor** between A0 (ADC pin) and GND to stabilize the battery reading. |
 | **External Ant.** | D3 & GPIO 14 | Used internally by code (set LOW/HIGH) to enable the U.FL antenna. |
 
 ---
