@@ -2,6 +2,9 @@
 
 This directory contains the STL models and reference images for the 3D printed enclosure of the Smart Button project.
 
+**Required Tactile Switch:** 12x12 7.5mm Tact Switch 
+*(Note: A 7.5mm stem length is a perfect fit for this enclosure design, but you can feel free to use other lengths if you modify/prefer it that way.)*
+
 ## Reference Images
 
 ### Cover
