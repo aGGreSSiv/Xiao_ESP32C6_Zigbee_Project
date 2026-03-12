@@ -15,6 +15,9 @@ This version of the firmware configures the XIAO ESP32-C6 as a **Sleepy End Devi
 - **Battery Reporting:** Reads LiPo voltage from A0 and correctly formats/sends to Home Assistant before going to sleep.
 - **Visual Feedback:** Blinks corresponding LEDs automatically when buttons are used or when Zigbee commands are sent.
 
+## 3D Printed Case
+You can find the 3D printable STL files and reference images for the enclosure in the [3dPrintFiles](./3dPrintFiles/) directory.
+
 ## Pin Definitions & Wiring
 | Component | Pin / GPIO | Notes |
 | :--- | :--- | :--- |
